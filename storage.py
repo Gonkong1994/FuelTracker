@@ -1,7 +1,12 @@
 from sqlalchemy import create_engine, Column,Integer,String, Float
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
+import os
+from dotenv import load_dotenv
 
-DATABASE_URL = "postgresql://postgres:postgres123@db:5432/fueltracker"
+load_dotenv()
+
+POSTGRES_HOST = os.getenv('POSTGRES_HOST', 'db')
+DATABASE_URL = f"postgresql://{os.getenv('POSTGRES_USER')}:{os.getenv('POSTGRES_PASSWORD')}@{os.getenv('POSTGRES_HOST')}:{os.getenv('POSTGRES_PORT')}/{os.getenv('POSTGRES_DB')}"
 engine = create_engine(DATABASE_URL)
 
 Session = sessionmaker(bind=engine)
