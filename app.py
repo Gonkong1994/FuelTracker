@@ -1,13 +1,13 @@
 from fastapi import FastAPI
 from storage import Session, FuelUpDB, load_fuelups
-from fuel import Fuel
+from fuel import FuelUp
 
 app = FastAPI(title="FuelTracker")
 
 def db_to_pydantic(db_fuelup):
     if db_fuelup is None:
         return None
-    return Fuel(
+    return FuelUp(
         car = db_fuelup.car,
         liters = db_fuelup.liters,
         price_per_liter = db_fuelup.price_per_liter,

@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 
-class Fuel(BaseModel):
+class FuelUp(BaseModel):
     
     car: str = Field(..., min_length = 2, description = 'Client car')
     liters: float = Field(default = 0, ge = 0, description = 'Liters refueled')
