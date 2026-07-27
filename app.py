@@ -68,3 +68,23 @@ def remove_fuelup(id:int):
         return {"deleted":id}
     return {"Error":"Fuelup not found"}
 
+@app.put("/fuelups/{id}")
+def edit_fuelup(id:int, car:str = None, liters:float = None, price_per_liter:float = None, kilometrs:int = None):
+    session = Session()
+    db_fuelup = session.query(FuelUpDB).filter(FuelUpDB.id == id).first()
+    if db_fuelup:
+        if car is not None:
+            db_fuelup.car = car
+        if liters is not None:
+            db_fuelup.liters = liters
+        if price_per_liter is not None:
+            db_fuelup.price_per_liter = price_per_liter
+        if kilometrs is not None:
+            db_fuelup.kilometrs = kilometrs
+        session.commit()
+        result = db_to_pydantic(db_fuelup).model_dump()
+        session.close()
+        return result
+    session.close()
+    return {"error":"FuelUp not found"}
+
