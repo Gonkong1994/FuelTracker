@@ -18,6 +18,7 @@ class FuelUpDB(Base):
     __tablename__ = "fuelups"
     
     id = Column(Integer, primary_key=True)
+    plate_number = Column(String(15), nullable=False)
     car = Column(String(50), nullable=False)
     liters = Column(Float, default=0)
     price_per_liter = Column(Float, default=0)
