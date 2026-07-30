@@ -1,7 +1,10 @@
 from storage import Session, FuelUpDB, load_fuelups
 from fuel import FuelUp, FuelUpUpdate
-from fastapi import FastAPI, Body
+from fastapi import FastAPI, Body, UploadFile, File
 from datetime import date
+from fastapi.responses import StreamingResponse
+import csv
+import io
 
 app = FastAPI(title="FuelTracker")
 
@@ -74,6 +77,49 @@ def get_summary():
     for plate in summary:
         summary[plate]["total_spent"] = round(summary[plate]["total_spent"], 2)
     return summary
+
+@app.get("/fuelups/export")
+def export_csv():
+    session = Session()
+    all_fuelups = session.query(FuelUpDB).all()
+    session.close()
+    
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["id", "plate_number", "car", "liters", "price_per_liter", "kilometers", "date"])
+    for f in all_fuelups:
+        writer.writerow([f.id, f.plate_number, f.car, f.liters, f.price_per_liter, f.kilometrs, f.date])
+    output.seek(0)
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=fuelups.csv"}
+    )
+    
+@app.get("/fuelups/import")
+def import_csv(file: UploadFile = File(...)):
+    content = file.file.read().decode("utf-8")
+    reader = csv.reader(io.StringIO(content))
+    session = Session()
+    count = 0
+    
+    next(reader, None)
+    for row in reader:
+        if len(row) >= 6:
+            db_fuelup = FuelUpDB(
+                plate_number=row[0],
+                car=row[1],
+                liters=float(row[2]),
+                price_per_liter=float(row[3]),
+                kilometrs=int(row[4]),
+                date=row[5]
+            )
+            session.add(db_fuelup)
+            count += 1
+    session.commit()
+    session.close()
+    return {"imported": count}
+
 
 @app.get("/fuelups/{id}")
 def get_fuelup(id:int):
